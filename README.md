@@ -4,7 +4,7 @@ This tool wraps aws cli.
 
 ## how to use
 
-create config file `s3-project-backup.json`
+### create config file `s3-project-backup.json`
 
 ```json
 {
@@ -15,13 +15,25 @@ create config file `s3-project-backup.json`
 }
 ```
 
-upload directory files
+you can use init command
+
+```shell
+s3-project-backup init
+```
+
+### upload directory files
 
 ```shell
 s3-project-backup upload
 ```
 
-download directory files
+or
+
+```shell
+s3-project-backup
+```
+
+### download directory files
 
 ```shell
 s3-project-backup download
