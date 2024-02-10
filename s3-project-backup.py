@@ -74,7 +74,7 @@ def upload(dryrun: bool = False):
     conf = load_conf()
     s3_path = build_s3_path(conf)
 
-    print(f"upload from {s3_path} to local directory.")
+    print(f"upload from local directory to {s3_path} .")
 
     cmd = [
         "aws",
@@ -195,6 +195,8 @@ def run():
 
     if command == "download":
         download(dryrun=args.d)
+    if command == "upload":
+        upload(dryrun=args.d)
     if command == "init":
         init()
 
