@@ -1,0 +1,6 @@
+{
+    "aws_profile": "nnyn-project-backup",
+    "s3_bucket": "nnyn-project-backup",
+    "s3_path_prefix": "20240210-nnyn-project-backup-testing",
+    "s3_storage_class": "STANDARD"
+}
