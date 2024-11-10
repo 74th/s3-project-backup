@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 import datetime
+import os
 import sys
 import subprocess
 import pathlib
@@ -12,10 +14,12 @@ GLOBAL_CONF_PATH = (
     pathlib.Path("~", ".config", "s3-project-backup").expanduser() / CONF_PATH
 )
 EXCLUDE_ITEMS = [
+    "upload.sh",
     ".gitignore",
     "s3-project-backup.json",
     "s3-project-backup.py",
     "_DS_Store",
+    ".DS_Store",
 ]
 DUPLICATED_ITEMS = ["README.md"]
 
@@ -25,6 +29,8 @@ GIT_IGNORE = """
 !README.md
 !s3-project-backup.json
 """
+
+CELAN_IGNORE = EXCLUDE_ITEMS + [p[1:].strip() for p in GIT_IGNORE.split("\n")[2:] if p or p.startswith("!")]
 
 
 class Config(TypedDict):
@@ -160,6 +166,19 @@ def init():
 
     print("created s3-project-backup.json")
 
+def clean(dryrun=False) -> None:
+    for f in pathlib.Path(".").iterdir():
+        if f.name in CELAN_IGNORE:
+            continue
+        print(f)
+        if dryrun:
+            continue
+        if f.is_file():
+            f.unlink()
+        if f.is_dir():
+            subprocess.run(["rm", "-rf", f])
+        if f.is_symlink():
+            f.unlink()
 
 def run():
     parser = argparse.ArgumentParser(description="simple s3 directory backup")
@@ -197,8 +216,8 @@ def run():
         download(dryrun=args.d)
     if command == "upload":
         upload(dryrun=args.d)
-    if command == "init":
-        init()
+    if command == "clean":
+        clean(dryrun=args.d)
 
 
 if __name__ == "__main__":
