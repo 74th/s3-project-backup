@@ -36,10 +36,10 @@ CLEAN_IGNORE = EXCLUDE_ITEMS + [
 
 
 class Config(TypedDict):
-    aws_profile: str
-    s3_bucket: str
-    s3_path_prefix: str
-    s3_storage_class: str
+    aws_profile: str | None
+    s3_bucket: str | None
+    s3_path_prefix: str | None
+    s3_storage_class: str | None
 
 
 def run_command(cmd: list[str]):
@@ -143,22 +143,24 @@ def init():
             "s3_storage_class": "",
         }
 
-    if conf["aws_profile"] == "":
+    if not conf.get("aws_profile", ""):
         conf["aws_profile"] = input("aws profile: ")
 
-    if conf["s3_bucket"] == "":
+    if not conf.get("s3_bucket", ""):
         conf["s3_bucket"] = input("s3 bucket name: ")
 
-    if conf["s3_path_prefix"] == "":
+    if not conf.get("s3_path_prefix", ""):
         dir_name = pathlib.Path(".").resolve().name
 
         conf["s3_path_prefix"] = input(f's3 path prefix (default:"{dir_name}"): ')
 
-        if conf["s3_path_prefix"] == "":
+        if not conf["s3_path_prefix"]:
             conf["s3_path_prefix"] = dir_name
 
-    if conf["s3_storage_class"] == "":
-        conf["s3_path_prefix"] = input("s3 storage class: ")
+    if not conf.get("s3_storage_class", ""):
+        conf["s3_storage_class"] = input("s3 storage class: ")
+        if not conf["s3_storage_class"]:
+            conf["s3_storage_class"] = "STANDARD"
 
     with CONF_PATH.open("w", encoding="UTF-8") as f:
         json.dump(conf, f, indent=2)
