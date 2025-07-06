@@ -30,7 +30,9 @@ GIT_IGNORE = """
 !s3-project-backup.json
 """
 
-CELAN_IGNORE = EXCLUDE_ITEMS + [p[1:].strip() for p in GIT_IGNORE.split("\n")[2:] if p or p.startswith("!")]
+CLEAN_IGNORE = EXCLUDE_ITEMS + [
+    p[1:].strip() for p in GIT_IGNORE.split("\n")[2:] if p or p.startswith("!")
+]
 
 
 class Config(TypedDict):
@@ -50,7 +52,13 @@ def load_conf() -> Config:
         raise Exception("s3-project-backup.json not found")
 
     with CONF_PATH.open("r", encoding="UTF-8") as f:
-        return cast(Config, json.load(f))
+        conf = cast(Config, json.load(f))
+
+    if conf["s3_path_prefix"] == "DIRNAME":
+        dir_name = pathlib.Path(".").resolve().name
+        conf["s3_path_prefix"] = dir_name
+
+    return conf
 
 
 def load_global_conf() -> Optional[Config]:
@@ -142,14 +150,12 @@ def init():
         conf["s3_bucket"] = input("s3 bucket name: ")
 
     if conf["s3_path_prefix"] == "":
-        yyyymmdd = datetime.datetime.now().strftime("%Y%m%d")
         dir_name = pathlib.Path(".").resolve().name
-        default_prefix = f"{yyyymmdd}-{dir_name}"
 
-        conf["s3_path_prefix"] = input(f's3 path prefix (default:\"{default_prefix}\"): ')
+        conf["s3_path_prefix"] = input(f's3 path prefix (default:"{dir_name}"): ')
 
         if conf["s3_path_prefix"] == "":
-            conf["s3_path_prefix"] = default_prefix
+            conf["s3_path_prefix"] = dir_name
 
     if conf["s3_storage_class"] == "":
         conf["s3_path_prefix"] = input("s3 storage class: ")
@@ -166,9 +172,10 @@ def init():
 
     print("created s3-project-backup.json")
 
+
 def clean(dryrun=False) -> None:
     for f in pathlib.Path(".").iterdir():
-        if f.name in CELAN_IGNORE:
+        if f.name in CLEAN_IGNORE:
             continue
         print(f)
         if dryrun:
@@ -179,6 +186,7 @@ def clean(dryrun=False) -> None:
             subprocess.run(["rm", "-rf", f])
         if f.is_symlink():
             f.unlink()
+
 
 def run():
     parser = argparse.ArgumentParser(description="simple s3 directory backup")
